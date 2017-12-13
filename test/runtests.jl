@@ -25,3 +25,40 @@ using Base.Test
     @test ndims(μ) == 2
     @test length(μ) == 10
 end
+
+
+@testset "White noise" begin
+
+    ntime = 10
+    # generate random scenarios
+    scen = rand(ntime, 100, 1)
+
+    w = Scenarios.WhiteNoise(scen, 2, KMeans())
+
+    @test isa(w, Scenarios.WhiteNoise)
+    @test length(w) == ntime
+    @test size(rand(w, 2)) == (10, 2, 1)
+end
+
+
+@testset "AR process" begin
+    ntime = 10
+    scen = rand(ntime, 100)
+
+    a, b, s = fitar(scen, order=1)
+    @test size(a) == (ntime-1, 1)
+
+    a, b, s = fitar(scen, order=2)
+    @test size(a) == (ntime-1, 2)
+end
+
+
+@testset "Markov Chain" begin
+    ntime = 10
+    scen = rand(ntime, 100, 2)
+
+    m = MarkovChain(scen, 10, KMeans())
+
+    simu = rand(m)
+    @test size(simu) == (ntime, 2)
+end
