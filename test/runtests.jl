@@ -24,6 +24,4 @@ using Base.Test
     @test isa(μ, DiscreteLaw)
     @test ndims(μ) == 2
     @test length(μ) == 10
-
-
 end

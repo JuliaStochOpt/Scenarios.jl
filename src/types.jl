@@ -52,14 +52,13 @@ struct WhiteNoise{S} <: StochasticProcess where S <: AbstractProbabilityLaw
 end
 
 """Quantize scenarios time step by time step, with kmeans."""
-function WhiteNoise{S}(scenarios::Array{S, 3}, support_size::Int)
+function WhiteNoise{S}(scenarios::Array{S, 3}, nbins::Int, algo::AbstractQuantizer)
     T, n, Nw = size(scenarios)
-    laws = []
+    laws = DiscreteLaw[]
 
     for t in 1:T
-        R = kmeans(scenarios[t,:,:]', support_size)
-        saved = R.counts .> 1e-6
-        push!(laws, DiscreteLaw(R.centers[:,saved]', R.counts[saved] ./ sum(R.counts[saved])))
+        proba, support = quantize(algo, scenarios[t, :, :]', nbins)
+        push!(laws, DiscreteLaw(support, proba))
     end
 
     WhiteNoise(laws)
