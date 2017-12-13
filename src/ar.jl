@@ -1,3 +1,6 @@
+# Utilities to fit non-stationary Markov Chain
+
+export fitar
 
 
 """
@@ -11,9 +14,9 @@ function fitar{T}(scenarios::Array{T, 2}; order::Int=1)
 
     # Define non-stationary AR model such that :
     #    X[t+1] = α[t] * X[t] + β[t] + σ[t] * N(0, 1)
-    α = zeros(T, ntime, order)
-    β = zeros(T, ntime)
-    σ = zeros(T, ntime)
+    α = zeros(T, ntime-1, order)
+    β = zeros(T, ntime-1)
+    σ = zeros(T, ntime-1)
 
     for t in (order):ntime-1
         sol = llsq(scenarios[t-order+1:t, :]', scenarios[t+1, :])

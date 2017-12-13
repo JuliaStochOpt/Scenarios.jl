@@ -1,5 +1,7 @@
 # Define Markov Chain
 
+export MarkovChain
+
 struct MarkovChain{S, T} <: AbstractStochasticProcess
     seed::StatsBase.ProbabilityWeights
     transition::Array{S, 3}
@@ -11,9 +13,9 @@ function MarkovChain{T}(scenarios::Array{T, 3}, nbins::Int, algo::AbstractQuanti
     ntime, nscenarios, nnoise = size(scenarios)
 
     transition = zeros(ntime-1, nbins, nbins)
-    chainvalues = zeros(ntime, nbins)
+    chainvalues = zeros(ntime, nbins, nnoise)
     # local transition matrix
-    πij = zeros(S, nbins, nbins)
+    πij = zeros(Float64, nbins, nbins)
     # local counter
     ni = zeros(Int, nbins)
 
@@ -41,7 +43,7 @@ function MarkovChain{T}(scenarios::Array{T, 3}, nbins::Int, algo::AbstractQuanti
         flagsold .= flags
     end
 
-    MarkovChain(pweight(seed), transition, support)
+    MarkovChain(pweights(seed), transition, chainvalues)
 end
 
 
@@ -49,19 +51,17 @@ Base.length(m::MarkovChain) = size(m.transition, 1)
 Base.size(m::MarkovChain) = size(m.support)
 
 
-function rand{S, T}(m::MarkovChain{S, T})
+function Base.rand{S, T}(m::MarkovChain{S, T})
     val = zeros(T, size(m)[2:3]...)
 
     # initiate first value
     index = sample(m.seed)
     val[1, :] = m.support[1, index, :]
 
-    for t = 2:length(m)
-        index = sample(pweight(m.transition[t-1, index, :]))
+    for t = 2:length(m)+1
+        index = sample(pweights(m.transition[t-1, index, :]))
         val[t, :] = m.support[t, index, :]
     end
 
     val
 end
-
-

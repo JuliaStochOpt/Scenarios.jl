@@ -45,14 +45,14 @@ Base.length(law::DiscreteLaw) = length(law.probas)
 
 ################################################################################
 ### Define stochastic processes utility
-abstract type StochasticProcess end
+abstract type AbstractStochasticProcess end
 
-struct WhiteNoise{S} <: StochasticProcess where S <: AbstractProbabilityLaw
+struct WhiteNoise{S} <: AbstractStochasticProcess where S <: AbstractProbabilityLaw
     laws::Vector{S}
 end
 
-"""Quantize scenarios time step by time step, with kmeans."""
-function WhiteNoise{S}(scenarios::Array{S, 3}, nbins::Int, algo::AbstractQuantizer)
+"""Quantize scenarios time step by time step."""
+function WhiteNoise(scenarios::Array{Float64, 3}, nbins::Int, algo::AbstractQuantizer)
     T, n, Nw = size(scenarios)
     laws = DiscreteLaw[]
 
@@ -66,3 +66,4 @@ end
 
 Base.rand(noise::WhiteNoise,n::Int=1) = Base.rand(noise.laws, n)
 Base.getindex(W::WhiteNoise, t::Int) = W.laws[t]
+Base.length(W::WhiteNoise) = length(W.laws)
