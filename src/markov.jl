@@ -73,3 +73,29 @@ function Base.rand{S, T}(m::MarkovChain{S, T}, n_s::Int)
     end
     vals
 end
+
+function Base.rand{S, T}(m::MarkovChain{S, T}, t_0::Int, x_0::Vector{T})
+    val = zeros(T, size(m)[1]-t_0+1, size(m)[3])
+
+    # initiate first value
+    kdtree = KDTree(m.support[1,:,:]')
+
+    index = knn(kdtree, x_0, 1)[1][1]
+    
+    val[1, :] = m.support[1, index, :]
+
+    for t = 2:length(val)
+        index = sample(pweights(m.transition[t-1, index, :]))
+        val[t, :] = m.support[t, index, :]
+    end
+
+    val
+end
+
+function Base.rand{S, T}(m::MarkovChain{S, T}, n_s::Int, t_0::Int, x_0::Vector{T})
+    vals = zeros(T, size(m)[1]-t_0+1, n_s, size(m)[3])
+    for s in 1:n_s
+        vals[:,s,:] = rand(m, t_0, x_0)
+    end
+    vals
+end
