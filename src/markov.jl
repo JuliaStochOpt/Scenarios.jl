@@ -52,7 +52,7 @@ Base.size(m::MarkovChain) = size(m.support)
 
 
 function Base.rand{S, T}(m::MarkovChain{S, T})
-    val = zeros(T, size(m)[2:3]...)
+    val = zeros(T, size(m)[1], size(m)[3])
 
     # initiate first value
     index = sample(m.seed)
