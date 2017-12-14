@@ -77,12 +77,12 @@ end
 function Base.rand{S, T}(m::MarkovChain{S, T}, t_0::Int, x_0::Vector{T})
     val = zeros(T, size(m)[1]-t_0+1, size(m)[3])
 
-    # initiate first value
+    val[1, :] = x_0
+
+    # find first closest centroid index
     kdtree = KDTree(m.support[1,:,:]')
 
     index = knn(kdtree, x_0, 1)[1][1]
-    
-    val[1, :] = m.support[1, index, :]
 
     for t = 2:length(val)
         index = sample(pweights(m.transition[t-1, index, :]))
@@ -98,4 +98,29 @@ function Base.rand{S, T}(m::MarkovChain{S, T}, n_s::Int, t_0::Int, x_0::Vector{T
         vals[:,s,:] = rand(m, t_0, x_0)
     end
     vals
+end
+
+function forecast{S, T}(m::MarkovChain{S,T}, t_0::Int, x_0::Vector{T})
+    val = zeros(T, size(m)[1]-t_0+1, size(m)[3])
+
+    val[1, :] = x_0
+
+    # find first closest centroid index
+    kdtree = KDTree(m.support[1,:,:]')
+
+    index = knn(kdtree, x_0, 1)[1][1]
+    
+    for t = 2:length(val)
+
+        for nw in 1:size(val)[2]
+            val[t, nw] = dot(m.support[t, :, nw], m.transition[t-1, index, :])
+        end
+
+        kdtree = KDTree(m.support[t,:,:]')
+
+        index = knn(kdtree, val[t,:], 1)[1][1]
+        
+    end
+
+    val
 end
