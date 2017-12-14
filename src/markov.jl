@@ -24,6 +24,8 @@ function MarkovChain{T}(scenarios::Array{T, 3}, nbins::Int, algo::AbstractQuanti
     for t in 2:ntime
         proba, support, flags = quantize(algo, scenarios[t, :, :]', nbins)
 
+        πij = 0 .* πij
+
         @inbounds for s in 1:nscenarios
             πij[flagsold[s], flags[s]] += 1
         end
@@ -61,4 +63,13 @@ function Base.rand{S, T}(m::MarkovChain{S, T})
     end
 
     val
+end
+
+function Base.rand{S, T}(m::MarkovChain{S, T}, n_s::Int)
+
+    vals = zeros(T, size(m)[1], n_s, size(m)[3])
+    for s in 1:n_s
+        vals[:,s,:] = rand(m)
+    end
+    vals
 end
