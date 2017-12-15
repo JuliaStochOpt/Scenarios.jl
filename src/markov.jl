@@ -18,7 +18,7 @@ function MarkovChain{T}(scenarios::Array{T, 3}, nbins::Int, algo::AbstractQuanti
     πij = zeros(Float64, nbins, nbins)
 
     probaold, supportold, flagsold = quantize(algo, scenarios[1, :, :]', nbins)
-    chainvalues[1, :, :] .= supportold
+    chainvalues[1, 1:size(supportold)[1], :] .= supportold
     seed = probaold
 
     for t in 2:ntime
@@ -31,14 +31,20 @@ function MarkovChain{T}(scenarios::Array{T, 3}, nbins::Int, algo::AbstractQuanti
         end
 
         # rescale proba
-        πij = πij ./ sum(πij, 2)
+        for i in 1:nbins
+            sum_transit = sum(πij[i, :])
+            if sum_transit > 1e-10
+                πij[i, :] = πij[i, :] / sum_transit
+            end
+        end
 
         # store results in matrix
         transition[t-1, :, :] .= πij
-        chainvalues[t, :, :] .= supportold
+        chainvalues[t, 1:size(supportold)[1], :] .= supportold
 
         # update previous values to current
-        supportold .= support
+        supportold = support
+        
         flagsold .= flags
     end
 
