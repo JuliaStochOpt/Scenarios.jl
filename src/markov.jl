@@ -18,7 +18,7 @@ function MarkovChain{T}(scenarios::Array{T, 3}, nbins::Int, algo::AbstractQuanti
     πij = zeros(Float64, nbins, nbins)
 
     probaold, supportold, flagsold = quantize(algo, scenarios[1, :, :]', nbins)
-    chainvalues[1, :, :] .= supportold
+    chainvalues[1, 1:size(supportold)[1], :] .= supportold
     seed = probaold
 
     for t in 2:ntime
@@ -31,14 +31,20 @@ function MarkovChain{T}(scenarios::Array{T, 3}, nbins::Int, algo::AbstractQuanti
         end
 
         # rescale proba
-        πij = πij ./ sum(πij, 2)
+        for i in 1:nbins
+            sum_transit = sum(πij[i, :])
+            if sum_transit > 1e-10
+                πij[i, :] = πij[i, :] / sum_transit
+            end
+        end
 
         # store results in matrix
         transition[t-1, :, :] .= πij
-        chainvalues[t, :, :] .= supportold
+        chainvalues[t, 1:size(supportold)[1], :] .= supportold
 
         # update previous values to current
-        supportold .= support
+        supportold = support
+        
         flagsold .= flags
     end
 
@@ -72,4 +78,55 @@ function Base.rand{S, T}(m::MarkovChain{S, T}, n_s::Int)
         vals[:,s,:] = rand(m)
     end
     vals
+end
+
+function Base.rand{S, T}(m::MarkovChain{S, T}, t_0::Int, x_0::Vector{T})
+    val = zeros(T, size(m)[1]-t_0+1, size(m)[3])
+
+    val[1, :] = x_0
+
+    # find first closest centroid index
+    kdtree = KDTree(m.support[1,:,:]')
+
+    index = knn(kdtree, x_0, 1)[1][1]
+
+    for t = 2:length(val)
+        index = sample(pweights(m.transition[t-1, index, :]))
+        val[t, :] = m.support[t, index, :]
+    end
+
+    val
+end
+
+function Base.rand{S, T}(m::MarkovChain{S, T}, n_s::Int, t_0::Int, x_0::Vector{T})
+    vals = zeros(T, size(m)[1]-t_0+1, n_s, size(m)[3])
+    for s in 1:n_s
+        vals[:,s,:] = rand(m, t_0, x_0)
+    end
+    vals
+end
+
+function forecast{S, T}(m::MarkovChain{S,T}, t_0::Int, x_0::Vector{T})
+    val = zeros(T, size(m)[1]-t_0+1, size(m)[3])
+
+    val[1, :] = x_0
+
+    # find first closest centroid index
+    kdtree = KDTree(m.support[1,:,:]')
+
+    index = knn(kdtree, x_0, 1)[1][1]
+    
+    for t = 2:length(val)
+
+        for nw in 1:size(val)[2]
+            val[t, nw] = dot(m.support[t, :, nw], m.transition[t-1, index, :])
+        end
+
+        kdtree = KDTree(m.support[t,:,:]')
+
+        index = knn(kdtree, val[t,:], 1)[1][1]
+        
+    end
+
+    val
 end

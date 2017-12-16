@@ -1,7 +1,7 @@
 
 module Scenarios
 
-using Clustering, JuMP, StatsBase, MultivariateStats
+using Clustering, JuMP, StatsBase, MultivariateStats, NearestNeighbors
 
 include("quantizers.jl")
 include("types.jl")
