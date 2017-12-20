@@ -24,7 +24,7 @@ function MarkovChain{T}(scenarios::Array{T, 3}, nbins::Int, algo::AbstractQuanti
     for t in 2:ntime
         proba, support, flags = quantize(algo, scenarios[t, :, :]', nbins)
 
-        πij = 0 .* πij
+        πij[:] = 0.
 
         @inbounds for s in 1:nscenarios
             πij[flagsold[s], flags[s]] += 1
@@ -44,7 +44,7 @@ function MarkovChain{T}(scenarios::Array{T, 3}, nbins::Int, algo::AbstractQuanti
 
         # update previous values to current
         supportold = support
-        
+
         flagsold .= flags
     end
 
@@ -115,7 +115,7 @@ function forecast{S, T}(m::MarkovChain{S,T}, t_0::Int, x_0::Vector{T})
     kdtree = KDTree(m.support[1,:,:]')
 
     index = knn(kdtree, x_0, 1)[1][1]
-    
+
     for t = 2:length(val)
 
         for nw in 1:size(val)[2]
@@ -125,7 +125,7 @@ function forecast{S, T}(m::MarkovChain{S,T}, t_0::Int, x_0::Vector{T})
         kdtree = KDTree(m.support[t,:,:]')
 
         index = knn(kdtree, val[t,:], 1)[1][1]
-        
+
     end
 
     val

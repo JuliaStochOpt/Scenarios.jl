@@ -36,7 +36,7 @@ end
     # generate random scenarios
     scen = rand(ntime, 100, 1)
 
-    w = Scenarios.WhiteNoise(scen, 2, KMeans())
+    w = Scenarios.WhiteNoise(scen, 2, CLVQ())
 
     @test isa(w, Scenarios.WhiteNoise)
     @test length(w) == ntime
