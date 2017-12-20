@@ -1,6 +1,6 @@
 # Define generic types to define noise
 
-export DiscreteLaw
+export DiscreteLaw, WhiteNoise
 
 abstract type AbstractProbabilityLaw end
 

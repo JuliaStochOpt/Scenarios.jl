@@ -24,6 +24,11 @@ using Base.Test
     @test isa(μ, DiscreteLaw)
     @test ndims(μ) == 2
     @test length(μ) == 10
+
+    μprod = prodlaws(μ, μ)
+    @test isa(μprod, DiscreteLaw)
+    @test ndims(μprod) == 4
+    @test length(μprod) == 100
 end
 
 
@@ -55,10 +60,12 @@ end
 
 @testset "Markov Chain" begin
     ntime = 10
+    nbins = 5
     scen = rand(ntime, 100, 2)
 
-    m = MarkovChain(scen, 10, KMeans())
+    m = MarkovChain(scen, nbins, KMeans())
 
     simu = rand(m)
     @test size(simu) == (ntime, 2)
+
 end

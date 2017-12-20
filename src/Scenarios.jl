@@ -8,5 +8,6 @@ include("types.jl")
 include("distance.jl")
 include("ar.jl")
 include("markov.jl")
+include("utils.jl")
 
 end
