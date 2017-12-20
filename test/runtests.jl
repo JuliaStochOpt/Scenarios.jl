@@ -68,4 +68,8 @@ end
     simu = rand(m)
     @test size(simu) == (ntime, 2)
 
+    # Test that transition matrix is Markovian
+    for t in 2:ntime-1
+        @test sum(sum(m.transition[t, :, :], 2)) == 5
+    end
 end
