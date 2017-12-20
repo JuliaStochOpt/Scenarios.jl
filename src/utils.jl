@@ -70,3 +70,12 @@ function prodprocess(w1::WhiteNoise, w2::WhiteNoise)
     @assert length(w1) == length(w2)
     return WhiteNoise(DiscreteLaw[prodlaws(w1[t], w2[t]) for t in 1:length(w1)])
 end
+function prodprocess(wn::Vector{WhiteNoise})
+    if length(wn) == 1
+        return wn[1]
+    elseif length(wn) == 2
+        return prodprocess(wn[1], wn[2])
+    else
+        return prodprocess(wn[1], prodprocess(wn[2:end]))
+    end
+end
