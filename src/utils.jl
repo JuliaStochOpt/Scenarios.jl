@@ -1,5 +1,6 @@
 
-export prodlaws
+export prodlaws, prodprocess
+
 """
 Generate all permutations between discrete probabilities specified in args.
 
@@ -58,3 +59,14 @@ function prodlaws(law::DiscreteLaw, laws...)
 end
 
 
+"""Product of two whitenoise process.
+
+# Notes
+Process are supposed to be independent.
+
+"""
+function prodprocess(w1::WhiteNoise, w2::WhiteNoise)
+    # chk consistency
+    @assert length(w1) == length(w2)
+    return WhiteNoise(DiscreteLaw[prodlaws(w1[t], w2[t]) for t in 1:length(w1)])
+end

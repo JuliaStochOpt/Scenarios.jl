@@ -6,7 +6,6 @@ using Base.Test
 
 
 @testset "Probability law" begin
-
     sizelaw = 10
     sup = rand(sizelaw)
     prob = rand(sizelaw)
@@ -33,7 +32,6 @@ end
 
 
 @testset "White noise" begin
-
     ntime = 10
     # generate random scenarios
     scen = rand(ntime, 100, 1)
@@ -43,6 +41,13 @@ end
     @test isa(w, Scenarios.WhiteNoise)
     @test length(w) == ntime
     @test size(rand(w, 2)) == (10, 2, 1)
+
+
+    # test product
+    w2 = Scenarios.WhiteNoise(scen, 2, KMeans())
+    wprod = prodprocess(w, w2)
+    @test isa(wprod, WhiteNoise)
+    @test length(wprod) == length(w)
 end
 
 
