@@ -48,7 +48,7 @@ function prodlaws(law::DiscreteLaw, laws...)
             i, j = tup
             # P(X = (x_i, y_i)) = pi1_i * pi2_i
             proba[count] = law.probas[i] * n2.probas[j]
-            support[count, :] = vcat(law.support[i, :], n2.support[i, :])
+            support[count, :] = vcat(law.support[i, :], n2.support[j, :])
             count += 1
         end
         return DiscreteLaw(support, proba)
