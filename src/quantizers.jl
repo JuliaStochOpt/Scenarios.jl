@@ -16,9 +16,14 @@ function quantize end
 
 
 function quantize(::KMeans, points, nbins::Int)
-    R = kmeans(points, nbins)
-    valid = R.counts .> 1e-6
-    return R.counts[valid] ./ sum(R.counts[valid]), R.centers[:, valid]', R.assignments
+    # KMeans works only if nbins > 1
+    if nbins > 1
+        R = kmeans(points, nbins)
+        valid = R.counts .> 1e-6
+        return R.counts[valid] ./ sum(R.counts[valid]), R.centers[:, valid]', R.assignments
+    else
+        return [1.], mean(points, 2)', [1]
+    end
 end
 
 
