@@ -36,18 +36,23 @@ end
     # generate random scenarios
     scen = rand(ntime, 100, 1)
 
-    w = Scenarios.WhiteNoise(scen, 2, CLVQ())
+    w = Scenarios.WhiteNoise(scen, 2, KMeans())
 
     @test isa(w, Scenarios.WhiteNoise)
     @test length(w) == ntime
     @test size(rand(w, 2)) == (10, 2, 1)
 
 
-    # test product
+    # test product with 2 whitenoise
     w2 = Scenarios.WhiteNoise(scen, 2, KMeans())
     wprod = prodprocess(w, w2)
     @test isa(wprod, WhiteNoise)
     @test length(wprod) == length(w)
+
+    # test product with 3 whitenoise
+    w2 = Scenarios.WhiteNoise(scen, 2, KMeans())
+    w3 = Scenarios.WhiteNoise(scen, 2, KMeans())
+    wprod = prodprocess([w, w2, w3])
 end
 
 

@@ -47,8 +47,8 @@ Base.length(law::DiscreteLaw) = length(law.probas)
 ### Define stochastic processes utility
 abstract type AbstractStochasticProcess end
 
-struct WhiteNoise{S} <: AbstractStochasticProcess where S <: AbstractProbabilityLaw
-    laws::Vector{S}
+struct WhiteNoise <: AbstractStochasticProcess
+    laws::Vector{DiscreteLaw}
 end
 
 """Quantize scenarios time step by time step."""
