@@ -39,6 +39,7 @@ end
 Base.ndims(law::DiscreteLaw) = length(law.support[1, :])
 Base.length(law::DiscreteLaw) = length(law.probas)
 
+weights(law::DiscreteLaw) = law.probas.values ./ law.probas.sum
 
 
 

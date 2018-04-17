@@ -1,5 +1,6 @@
 
 export prodlaws, prodprocess
+export resample
 
 """
 Generate all permutations between discrete probabilities specified in args.
@@ -66,11 +67,15 @@ Process are supposed to be independent.
 
 """
 function prodprocess(w1::WhiteNoise, w2::WhiteNoise)
-    # chk consistency
+    # chk consistency: process must share same number of timesteps
     @assert length(w1) == length(w2)
     return WhiteNoise(DiscreteLaw[prodlaws(w1[t], w2[t]) for t in 1:length(w1)])
 end
 function prodprocess(wn::Vector{WhiteNoise})
+    # get maximum support size of product
+    maxsize = prod([maximum(length.(w.laws)) for w in wn])
+    (maxsize > 100_000) && error("Final support size is too large: greater than 100_000")
+
     if length(wn) == 1
         return wn[1]
     elseif length(wn) == 2
@@ -79,3 +84,11 @@ function prodprocess(wn::Vector{WhiteNoise})
         return prodprocess(wn[1], prodprocess(wn[2:end]))
     end
 end
+
+function resample(mu::DiscreteLaw, nbins::Int)
+    k = kmeans(mu.support', nbins, weights=weights(mu))
+    return DiscreteLaw(k.centers', k.cweights)
+end
+
+resample(w::WhiteNoise, nbins::Int) = WhiteNoise(resample.(w.laws, nbins))
+resample(w::Vector{WhiteNoise}, nbins::Int) = resample(prodprocess(w), nbins)
