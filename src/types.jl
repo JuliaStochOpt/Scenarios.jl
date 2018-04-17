@@ -39,6 +39,7 @@ end
 Base.ndims(law::DiscreteLaw) = length(law.support[1, :])
 Base.length(law::DiscreteLaw) = length(law.probas)
 
+weights(law::DiscreteLaw) = law.probas.values ./ law.probas.sum
 
 
 
@@ -52,12 +53,12 @@ struct WhiteNoise <: AbstractStochasticProcess
 end
 
 """Quantize scenarios time step by time step."""
-function WhiteNoise(scenarios::Array{Float64, 3}, nbins::Int, algo::AbstractQuantizer; weights::Array=ones(Float64, size(scenarios)[1:2]) )
+function WhiteNoise(scenarios::Array{Float64, 3}, nbins::Int, algo::AbstractQuantizer)
     T, n, Nw = size(scenarios)
     laws = DiscreteLaw[]
 
     for t in 1:T
-        proba, support = quantize(algo, scenarios[t, :, :]', weights=weights[t,:], nbins)
+        proba, support = quantize(algo, scenarios[t, :, :]', nbins)
         push!(laws, DiscreteLaw(support, proba))
     end
 

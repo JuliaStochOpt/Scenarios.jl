@@ -1,5 +1,6 @@
 
 export prodlaws, prodprocess
+export resample
 
 """
 Generate all permutations between discrete probabilities specified in args.
@@ -66,11 +67,15 @@ Process are supposed to be independent.
 
 """
 function prodprocess(w1::WhiteNoise, w2::WhiteNoise)
-    # chk consistency
+    # chk consistency: process must share same number of timesteps
     @assert length(w1) == length(w2)
     return WhiteNoise(DiscreteLaw[prodlaws(w1[t], w2[t]) for t in 1:length(w1)])
 end
 function prodprocess(wn::Vector{WhiteNoise})
+    # get maximum support size of product
+    maxsize = prod([maximum(length.(w.laws)) for w in wn])
+    (maxsize > 100_000) && error("Final support size is too large: greater than 100_000")
+
     if length(wn) == 1
         return wn[1]
     elseif length(wn) == 2
@@ -80,51 +85,10 @@ function prodprocess(wn::Vector{WhiteNoise})
     end
 end
 
-"Reduction of vector of noise processes.
-
-When prodprocess between the noise processes is computationaly impossible, we apply a recursive three-by-three reduction by applying a k-means algorithm."
-function reducelaws(nodesnoises::Array; nbins::Int=10)
-    nnodes = length(nodesnoises)
-    
-    if nnodes == 1
-        return nodesnoises[1]
-    elseif nnodes <= 3
-        # get total number of uncertainties
-        nw = sum([size(noises.laws[1].support,2) for noises in nodesnoises])
-        
-        # get number of times steps
-        ntimes = length(nodesnoises[1].laws)
-
-        globallaw = Scenarios.prodprocess([noises for noises in nodesnoises])
-        nscen = length(globallaw.laws[1])
-        scenarios = zeros(Float64, ntimes, nscen, nw)
-
-        for t in 1:ntimes
-            scenarios[t, :, :] = globallaw.laws[t].support
-        end
-
-        weights = zeros(Float64, ntimes, nscen)
-        for t in 1:ntimes
-            weights[t,:] = globallaw.laws[t].probas.values
-        end
-
-        # then, we quantize vectors in `nw` dimensions
-        return WhiteNoise(scenarios, weights=weights, nbins, KMeans())
-    else
-        #We split the nodes in three almost-equal parts
-        newsize = Int(floor(nnodes/3))
-        
-        nodesnoises1 = nodesnoises[1:newsize]
-        nodesnoises2 = nodesnoises[(newsize+1):(2*newsize)]
-        nodesnoises3 = nodesnoises[(2*newsize+1):end]
-
-        globallaw1 = reducelaws(nodesnoises1, nbins=10)
-        globallaw2 = reducelaws(nodesnoises2, nbins=10)
-        globallaw3 = reducelaws(nodesnoises3, nbins=10)
-
-        newnodesnoises = vcat([globallaw1, globallaw2, globallaw3]...)
-
-        return reducelaws(newnodesnoises, nbins=nbins)
-
-    end
+function resample(mu::DiscreteLaw, nbins::Int)
+    k = kmeans(mu.support', nbins, weights=weights(mu))
+    return DiscreteLaw(k.centers', k.cweights)
 end
+
+resample(w::WhiteNoise, nbins::Int) = WhiteNoise(resample.(w.laws, nbins))
+resample(w::Vector{WhiteNoise}, nbins::Int) = resample(prodprocess(w), nbins)

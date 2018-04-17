@@ -15,10 +15,10 @@ Quantize `points` in `nbins` with `algo` quantizer.
 function quantize end
 
 
-function quantize(::KMeans, points, nbins::Int; weights=ones(Float64, size(points,2)))
+function quantize(::KMeans, points::Array{T, 2}, nbins::Int; weights=nothing) where T <: Real
     # KMeans works only if nbins > 1
     if nbins > 1
-        R = kmeans(points, nbins, weights= weights)
+        R = kmeans(points, nbins, weights=weights)
         valid = R.counts .> 1e-6
         return R.counts[valid] ./ sum(R.counts[valid]), R.centers[:, valid]', R.assignments
     else
@@ -26,10 +26,13 @@ function quantize(::KMeans, points, nbins::Int; weights=ones(Float64, size(point
     end
 end
 
+
+
 # Competitive Learning Vector Quantization
 immutable CLVQ <: AbstractQuantizer end
 
 function quantize{T}(::CLVQ, points::Array{T, 2}, nbins::Int; pnorm=2)
+    warning("CLVQ clustering is still experimental feature")
 
     nx = size(points, 1)
     npoints = size(points, 2)

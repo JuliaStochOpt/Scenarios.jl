@@ -28,6 +28,15 @@ using Base.Test
     @test isa(μprod, DiscreteLaw)
     @test ndims(μprod) == 4
     @test length(μprod) == 100
+
+    # test weights
+    p = Scenarios.weights(μ)
+    @test sum(p) ≈ 1.
+
+    # test resampling
+    μ2 = resample(μ, 2)
+    @test isa(μ2, DiscreteLaw)
+    @test length(μ2) == 2
 end
 
 
@@ -53,6 +62,17 @@ end
     w2 = Scenarios.WhiteNoise(scen, 2, KMeans())
     w3 = Scenarios.WhiteNoise(scen, 2, KMeans())
     wprod = prodprocess([w, w2, w3])
+
+    # test resampling
+    ws = Scenarios.WhiteNoise(scen, 5, KMeans())
+    wnew = resample(ws, 2)
+    @test isa(wnew, WhiteNoise)
+    @test any(length.(wnew.laws) .== 2)
+
+    # test resampling of vector of processes
+    wnew = resample([ws, ws], 2)
+    @test isa(wnew, WhiteNoise)
+    @test any(length.(wnew.laws) .== 2)
 end
 
 
