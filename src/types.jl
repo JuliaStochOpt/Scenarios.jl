@@ -52,12 +52,12 @@ struct WhiteNoise <: AbstractStochasticProcess
 end
 
 """Quantize scenarios time step by time step."""
-function WhiteNoise(scenarios::Array{Float64, 3}, nbins::Int, algo::AbstractQuantizer)
+function WhiteNoise(scenarios::Array{Float64, 3}, nbins::Int, algo::AbstractQuantizer; weights::Array=ones(Float64, size(scenarios)[1:2]) )
     T, n, Nw = size(scenarios)
     laws = DiscreteLaw[]
 
     for t in 1:T
-        proba, support = quantize(algo, scenarios[t, :, :]', nbins)
+        proba, support = quantize(algo, scenarios[t, :, :]', weights=weights[t,:], nbins)
         push!(laws, DiscreteLaw(support, proba))
     end
 
