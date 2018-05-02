@@ -87,14 +87,19 @@ end
 
 # raw resampling
 function resample(mu::DiscreteLaw, nbins::Int)
-    if nbins > 1
-        k = kmeans(mu.support', nbins, weights=weights(mu))
-        return DiscreteLaw(k.centers', k.cweights)
-    else
+    # first, test if resampling is valid
+    ~(1 <= nbins <= length(mu)) && error("Wrong resampling: we should have 1 <= nbins <= $(length(mu))")
+    # then, disjunction wrt the different case
+    if nbins == 1
         proba = weights(mu)
         sup = zeros(Float64, 1, ndims(mu))
         sup[:] = (mu.support' * proba)
         return DiscreteLaw(sup, [1.])
+    elseif nbins == length(mu)
+        return mu
+    else
+        k = kmeans(mu.support', nbins, weights=weights(mu))
+        return DiscreteLaw(k.centers', k.cweights)
     end
 end
 
@@ -105,11 +110,16 @@ resample(w::Vector{WhiteNoise}, nbins::Int) = resample(prodprocess(w), nbins)
 abstract type AbstractSampler end
 
 struct DiscreteLawSampler <: AbstractSampler
+    # final quantization size
     nbins::Int
+    # intermediate quantization size (for subprocess)
     nbins_inner::Int
+    # subprocesses length
     Δn::Int
+    # maximum allowable size for intermediate sampling
+    MAXSIZE::Int
 end
-DiscreteLawSampler(nbins; nbins_inner=nbins, Δn=-1) = DiscreteLawSampler(nbins, nbins_inner, Δn)
+DiscreteLawSampler(nbins, nbins_inner; Δn=-1) = DiscreteLawSampler(nbins, nbins_inner, Δn, 100_000)
 
 function (sampler::DiscreteLawSampler)(noises::Vector{WhiteNoise})
     # if not specified, resample all in once
@@ -117,15 +127,15 @@ function (sampler::DiscreteLawSampler)(noises::Vector{WhiteNoise})
         return resample(noises, sampler.nbins)
     end
 
-    # otherwise, resample in two steps
+    # otherwise, resample iteratively the noise process
     nwindows = ceil(Int, length(noises) / sampler.Δn)
     Δn = sampler.Δn
 
     # ensure that total prodprocess size is not too big
-    @assert sampler.nbins_inner^nwindows <= 100_000
+    @assert sampler.nbins_inner^nwindows <= sampler.MAXSIZE
 
     # first step
-    # we resample the noise sequentially
+    ## we resample the noise sequentially
     i0, i1 = 1, Δn
 
     μtot = WhiteNoise[]
@@ -138,5 +148,6 @@ function (sampler::DiscreteLawSampler)(noises::Vector{WhiteNoise})
     end
 
     # second step
+    ## resample inside the resampled subprocess
     return resample(μtot, sampler.nbins)
 end

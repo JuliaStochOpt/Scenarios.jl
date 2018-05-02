@@ -103,3 +103,29 @@ end
         @test sum(sum(m.transition[t, :, :], 2)) == 5
     end
 end
+
+
+@testset "Resampler" begin
+    ntime = 10
+    nprocesses = 6
+    # generate random scenarios
+    scen = rand(ntime, 100, 1)
+
+    μtot = Scenarios.WhiteNoise[]
+    for i = 1:nprocesses
+        w = Scenarios.WhiteNoise(scen, 2, KMeans())
+        push!(μtot, w)
+    end
+
+    # total size is 2^6 = 64
+    # if quantization size is bigger than 64, an error is thrown
+    rs = DiscreteLawSampler(65, 2)
+    @test_throws ErrorException rs(μtot)
+
+    # single bin quantization
+    rs = DiscreteLawSampler(1, 2)
+    @test isa(rs(μtot), Scenarios.WhiteNoise)
+
+    rs = DiscreteLawSampler(10, 2)
+    @test isa(rs(μtot), Scenarios.WhiteNoise)
+end
