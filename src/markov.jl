@@ -9,7 +9,7 @@ struct MarkovChain{S, T} <: AbstractStochasticProcess
 end
 
 
-function MarkovChain{T}(scenarios::Array{T, 3}, nbins::Int, algo::AbstractQuantizer)
+function MarkovChain(scenarios::Array{T, 3}, nbins::Int, algo::AbstractQuantizer) where T
     ntime, nscenarios, nnoise = size(scenarios)
 
     transition = zeros(ntime-1, nbins, nbins)
@@ -56,7 +56,7 @@ Base.length(m::MarkovChain) = size(m.transition, 1)
 Base.size(m::MarkovChain) = size(m.support)
 
 
-function Base.rand{S, T}(m::MarkovChain{S, T})
+function Base.rand(m::MarkovChain{S, T}) where {S, T}
     val = zeros(T, size(m)[1], size(m)[3])
 
     # initiate first value
@@ -71,7 +71,7 @@ function Base.rand{S, T}(m::MarkovChain{S, T})
     val
 end
 
-function Base.rand{S, T}(m::MarkovChain{S, T}, n_s::Int)
+function Base.rand(m::MarkovChain{S, T}, n_s::Int) where {S, T}
 
     vals = zeros(T, size(m)[1], n_s, size(m)[3])
     for s in 1:n_s
@@ -80,7 +80,7 @@ function Base.rand{S, T}(m::MarkovChain{S, T}, n_s::Int)
     vals
 end
 
-function Base.rand{S, T}(m::MarkovChain{S, T}, t_0::Int, x_0::Vector{T})
+function Base.rand(m::MarkovChain{S, T}, t_0::Int, x_0::Vector{T}) where {S, T}
     val = zeros(T, size(m)[1]-t_0+1, size(m)[3])
 
     val[1, :] = x_0
@@ -98,7 +98,7 @@ function Base.rand{S, T}(m::MarkovChain{S, T}, t_0::Int, x_0::Vector{T})
     val
 end
 
-function Base.rand{S, T}(m::MarkovChain{S, T}, n_s::Int, t_0::Int, x_0::Vector{T})
+function Base.rand(m::MarkovChain{S, T}, n_s::Int, t_0::Int, x_0::Vector{T}) where {S, T}
     vals = zeros(T, size(m)[1]-t_0+1, n_s, size(m)[3])
     for s in 1:n_s
         vals[:,s,:] = rand(m, t_0, x_0)
@@ -106,7 +106,7 @@ function Base.rand{S, T}(m::MarkovChain{S, T}, n_s::Int, t_0::Int, x_0::Vector{T
     vals
 end
 
-function forecast{S, T}(m::MarkovChain{S,T}, t_0::Int, x_0::Vector{T})
+function forecast(m::MarkovChain{S,T}, t_0::Int, x_0::Vector{T}) where {S, T}
     val = zeros(T, size(m)[1]-t_0+1, size(m)[3])
 
     val[1, :] = x_0
