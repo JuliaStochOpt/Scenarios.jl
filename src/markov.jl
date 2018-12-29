@@ -24,7 +24,7 @@ function MarkovChain(scenarios::Array{T, 3}, nbins::Int, algo::AbstractQuantizer
     for t in 2:ntime
         proba, support, flags = quantize(algo, collect(scenarios[t, :, :]'), nbins)
 
-        πij[:] = 0.
+        πij[:] .= 0.
 
         @inbounds for s in 1:nscenarios
             πij[flagsold[s], flags[s]] += 1
