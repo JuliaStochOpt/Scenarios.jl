@@ -20,9 +20,9 @@ function quantize(::KMeans, points::Array{T, 2}, nbins::Int; weights=nothing) wh
     if nbins > 1
         R = kmeans(points, nbins, weights=weights)
         valid = R.counts .> 1e-6
-        return R.counts[valid] ./ sum(R.counts[valid]), R.centers[:, valid]', R.assignments
+        return R.counts[valid] ./ sum(R.counts[valid]), collect(R.centers[:, valid]'), R.assignments
     else
-        return [1.], mean(points, 2)', [1]
+        return [1.], collect(mean(points, 2)'), [1]
     end
 end
 

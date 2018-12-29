@@ -17,12 +17,12 @@ function MarkovChain(scenarios::Array{T, 3}, nbins::Int, algo::AbstractQuantizer
     # local transition matrix
     πij = zeros(Float64, nbins, nbins)
 
-    probaold, supportold, flagsold = quantize(algo, scenarios[1, :, :]', nbins)
+    probaold, supportold, flagsold = quantize(algo, collect(scenarios[1, :, :]'), nbins)
     chainvalues[1, 1:size(supportold)[1], :] .= supportold
     seed = probaold
 
     for t in 2:ntime
-        proba, support, flags = quantize(algo, scenarios[t, :, :]', nbins)
+        proba, support, flags = quantize(algo, collect(scenarios[t, :, :]'), nbins)
 
         πij[:] = 0.
 
@@ -86,7 +86,7 @@ function Base.rand(m::MarkovChain{S, T}, t_0::Int, x_0::Vector{T}) where {S, T}
     val[1, :] = x_0
 
     # find first closest centroid index
-    kdtree = KDTree(m.support[1,:,:]')
+    kdtree = KDTree(collect(m.support[1,:,:]'))
 
     index = knn(kdtree, x_0, 1)[1][1]
 
@@ -112,7 +112,7 @@ function forecast(m::MarkovChain{S,T}, t_0::Int, x_0::Vector{T}) where {S, T}
     val[1, :] = x_0
 
     # find first closest centroid index
-    kdtree = KDTree(m.support[1,:,:]')
+    kdtree = KDTree(collect(m.support[1,:,:]'))
 
     index = knn(kdtree, x_0, 1)[1][1]
 
@@ -122,7 +122,7 @@ function forecast(m::MarkovChain{S,T}, t_0::Int, x_0::Vector{T}) where {S, T}
             val[t, nw] = dot(m.support[t, :, nw], m.transition[t-1, index, :])
         end
 
-        kdtree = KDTree(m.support[t,:,:]')
+        kdtree = KDTree(collect(m.support[t,:,:]'))
 
         index = knn(kdtree, val[t,:], 1)[1][1]
 
