@@ -88,12 +88,12 @@ end
 # raw resampling
 function resample(mu::DiscreteLaw, nbins::Int)
     if nbins > 1
-        k = kmeans(mu.support', nbins, weights=weights(mu))
-        return DiscreteLaw(k.centers', k.cweights)
+        k = kmeans(collect(mu.support'), nbins, weights=weights(mu))
+        return DiscreteLaw(collect(k.centers'), k.cweights)
     else
         proba = weights(mu)
         sup = zeros(Float64, 1, ndims(mu))
-        sup[:] = (mu.support' * proba)
+        sup[:] = (collect(mu.support') * proba)
         return DiscreteLaw(sup, [1.])
     end
 end

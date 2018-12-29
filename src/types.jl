@@ -58,7 +58,7 @@ function WhiteNoise(scenarios::Array{Float64, 3}, nbins::Int, algo::AbstractQuan
     laws = DiscreteLaw[]
 
     for t in 1:T
-        proba, support = quantize(algo, scenarios[t, :, :]', nbins)
+        proba, support = quantize(algo, collect(scenarios[t, :, :]'), nbins)
         push!(laws, DiscreteLaw(support, proba))
     end
 

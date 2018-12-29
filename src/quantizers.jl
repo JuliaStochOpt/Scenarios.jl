@@ -5,7 +5,7 @@ export KMeans, CLVQ, quantize
 
 abstract type AbstractQuantizer end
 
-immutable KMeans <: AbstractQuantizer end
+struct KMeans <: AbstractQuantizer end
 
 """
     quantize(algo::AbstractQuantizer, points::Array{T, 2}, nbins::Int)
@@ -29,7 +29,7 @@ end
 
 
 # Competitive Learning Vector Quantization
-immutable CLVQ <: AbstractQuantizer end
+struct CLVQ <: AbstractQuantizer end
 
 function quantize{T}(::CLVQ, points::Array{T, 2}, nbins::Int; pnorm=2)
     warning("CLVQ clustering is still experimental feature")

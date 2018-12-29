@@ -19,7 +19,7 @@ function fitar{T}(scenarios::Array{T, 2}; order::Int=1)
     σ = zeros(T, ntime-1)
 
     for t in (order):ntime-1
-        sol = llsq(scenarios[t-order+1:t, :]', scenarios[t+1, :])
+        sol = llsq(collect(scenarios[t-order+1:t, :]'), scenarios[t+1, :])
         α[t, :] = sol[1:order]
         β[t] = sol[end]
 
