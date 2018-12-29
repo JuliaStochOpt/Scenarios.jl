@@ -2,7 +2,7 @@
 
 using Scenarios
 
-using Base.Test
+using Test
 
 
 @testset "Probability law" begin
