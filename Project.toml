@@ -1,0 +1,6 @@
+[deps]
+Clustering = "aaaa29a8-35af-508c-8bc3-b662a17a0fe5"
+JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
+MultivariateStats = "6f286f6a-111f-5878-ab1e-185364afe411"
+NearestNeighbors = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
