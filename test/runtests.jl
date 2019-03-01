@@ -2,7 +2,7 @@
 
 using Scenarios
 
-using Base.Test
+using Test
 
 
 @testset "Probability law" begin
@@ -100,6 +100,6 @@ end
 
     # Test that transition matrix is Markovian
     for t in 2:ntime-1
-        @test sum(sum(m.transition[t, :, :], 2)) == 5
+        @test sum(sum(m.transition[t, :, :], dims=2)) == 5
     end
 end

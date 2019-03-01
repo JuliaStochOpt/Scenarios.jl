@@ -93,8 +93,8 @@ function resample(mu::DiscreteLaw, nbins::Int)
     else
         proba = weights(mu)
         sup = zeros(Float64, 1, ndims(mu))
-        sup[:] = (collect(mu.support') * proba)
-        return DiscreteLaw(sup, [1.])
+        sup[:] = (mu.support' * proba)
+        return DiscreteLaw(collect(sup), [1.])
     end
 end
 

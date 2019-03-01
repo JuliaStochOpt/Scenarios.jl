@@ -11,16 +11,16 @@ struct DiscreteLaw{T} <: AbstractProbabilityLaw
     probas::StatsBase.ProbabilityWeights
 end
 
-function DiscreteLaw{T}(support::Array{T, 2}, proba::Vector{T})
+function DiscreteLaw(support::Array{T, 2}, proba::Vector{T}) where T
     @assert size(support, 1) == length(proba)
     return DiscreteLaw(support, pweights(proba))
 end
-function DiscreteLaw{T}(support::Vector{T}, proba::Vector{T})
+function DiscreteLaw(support::Vector{T}, proba::Vector{T}) where T
     support = reshape(support, length(support), 1)
     @assert size(support, 1) == length(proba)
     return DiscreteLaw(support, pweights(proba))
 end
-function DiscreteLaw{T}(support::Vector{T})
+function DiscreteLaw(support::Vector{T}) where T
     support = reshape(support, 1, length(support))
     return DiscreteLaw(support, pweights([1.]))
 end

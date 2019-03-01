@@ -8,7 +8,7 @@ export fitar
 
 Fit non-stationary AR process onto `scenarios`.
 """
-function fitar{T}(scenarios::Array{T, 2}; order::Int=1)
+function fitar(scenarios::Array{T, 2}; order::Int=1) where T
     ntime = size(scenarios, 1)
     @assert order < ntime
 
